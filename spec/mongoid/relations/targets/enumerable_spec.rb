@@ -36,7 +36,7 @@ describe Mongoid::Relations::Targets::Enumerable do
         end
 
         it "returns the equality check" do
-          enumerable.loaded.should eq([ post ])
+          enumerable.should eq([ post ])
         end
       end
 
@@ -86,7 +86,7 @@ describe Mongoid::Relations::Targets::Enumerable do
 
             before do
               post.save
-              enumerable.added << post
+              enumerable.added[post.id] = post
             end
 
             it "returns the equality check" do
@@ -130,11 +130,11 @@ describe Mongoid::Relations::Targets::Enumerable do
       end
 
       it "adds the document to the added target" do
-        enumerable.added.should eq([ post ])
+        enumerable.added.should eq({ post.id => post })
       end
 
       it "returns the added documents" do
-        added.should eq([ post ])
+        added.should eq(post)
       end
     end
   end
@@ -219,7 +219,7 @@ describe Mongoid::Relations::Targets::Enumerable do
     end
 
     before do
-      enumerable.loaded << post
+      enumerable.loaded[post.id] = post
       enumerable << post
     end
 
@@ -533,7 +533,7 @@ describe Mongoid::Relations::Targets::Enumerable do
       end
 
       it "loads each document" do
-        enumerable.loaded.should eq([ post ])
+        enumerable.loaded.should eq({ post.id => post })
       end
 
       it "becomes loaded" do
@@ -554,7 +554,7 @@ describe Mongoid::Relations::Targets::Enumerable do
       end
 
       it "does not alter the loaded docs" do
-        enumerable.loaded.should eq([ post ])
+        enumerable.loaded.should eq({ post.id => post })
       end
 
       it "stays loaded" do
@@ -589,11 +589,11 @@ describe Mongoid::Relations::Targets::Enumerable do
         end
 
         it "adds the unloaded to the loaded docs" do
-          enumerable.loaded.should eq([ post ])
+          enumerable.loaded.should eq({ post.id => post })
         end
 
         it "keeps the appended in the added docs" do
-          enumerable.added.should eq([ post_two ])
+          enumerable.added.should eq({ post_two.id => post_two })
         end
 
         it "stays loaded" do
@@ -614,7 +614,7 @@ describe Mongoid::Relations::Targets::Enumerable do
         end
 
         it "adds the persisted added doc to the loaded" do
-          enumerable.loaded.should eq([ post ])
+          enumerable.loaded.should eq({ post.id => post })
         end
 
         it "stays loaded" do
@@ -1232,7 +1232,7 @@ describe Mongoid::Relations::Targets::Enumerable do
     end
 
     it "loads all the unloaded documents" do
-      enumerable.loaded.should eq([ post ])
+      enumerable.loaded.should eq({ post.id => post })
     end
 
     it "returns true" do
@@ -1513,7 +1513,7 @@ describe Mongoid::Relations::Targets::Enumerable do
 
     before do
       enumerable << post
-      enumerable.loaded << post
+      enumerable.loaded[post.id] = post
     end
 
     let!(:uniq) do

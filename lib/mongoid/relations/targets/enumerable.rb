@@ -16,7 +16,7 @@ module Mongoid #:nodoc:
         # @attribute [rw] unloaded A criteria representing persisted docs.
         attr_accessor :added, :loaded, :unloaded
 
-        delegate :===, :is_a?, :kind_of?, :to => :added
+        delegate :===, :is_a?, :kind_of?, :to => []
 
         # Check if the enumerable is equal to the other object.
         #
@@ -44,7 +44,7 @@ module Mongoid #:nodoc:
         #
         # @since 2.1.0
         def <<(document)
-          added.push(document)
+          added[document.id] = document
         end
         alias :push :<<
 
@@ -94,7 +94,7 @@ module Mongoid #:nodoc:
         #
         # @since 2.1.0
         def delete(document)
-          (loaded.delete(document) || added.delete(document)).tap do |doc|
+          (loaded.delete(document.id) || added.delete(document.id)).tap do |doc|
             unless doc
               if unloaded && unloaded.where(:_id => document.id).exists?
                 yield(document) if block_given?
@@ -121,8 +121,11 @@ module Mongoid #:nodoc:
         def delete_if(&block)
           load_all!
           tap do
-            loaded.delete_if(&block)
-            added.delete_if(&block)
+            deleted = in_memory.select(&block)
+            deleted.each do |doc|
+              loaded.delete(doc.id)
+              added.delete(doc.id)
+            end
           end
         end
 
@@ -146,17 +149,17 @@ module Mongoid #:nodoc:
         # @since 2.1.0
         def each
           if loaded?
-            loaded.each do |doc|
+            loaded.each_pair do |id, doc|
               yield(doc)
             end
           else
             unloaded.each do |doc|
-              document = added.delete_one(doc) || loaded.delete_one(doc) || doc
+              document = added.delete(doc.id) || loaded.delete(doc.id) || doc
               yield(document)
-              loaded.push(document)
+              loaded[document.id] = document
             end
           end
-          added.each do |doc|
+          added.each_pair do |id, doc|
             yield(doc)
           end
           @executed = true
@@ -189,10 +192,10 @@ module Mongoid #:nodoc:
         #
         # @since 2.1.0
         def first
-          loaded.try(:first) ||
-            added.detect { |doc| doc == unloaded.try(:first) } ||
+          loaded.try(:values).try(:first) ||
+            added[unloaded.try(:first).try(:id)] ||
             unloaded.try(:first) ||
-            added.first
+            added.values.try(:first)
         end
 
         # Initialize the new enumerable either with a criteria or an array.
@@ -208,9 +211,13 @@ module Mongoid #:nodoc:
         # @since 2.1.0
         def initialize(target)
           if target.is_a?(Criteria)
-            @added, @executed, @loaded, @unloaded = [], false, [], target
+            @added, @executed, @loaded, @unloaded = {}, false, {}, target
           else
-            @added, @executed, @loaded = [], true, target
+            @added, @executed = {}, true
+            @loaded = target.inject({}) do |_target, doc|
+              _target[doc.id] = doc
+              _target
+            end
           end
         end
 
@@ -239,7 +246,7 @@ module Mongoid #:nodoc:
         #
         # @since 2.1.0
         def in_memory
-          (loaded + added).tap do |docs|
+          (loaded.values + added.values).tap do |docs|
             docs.each { |doc| yield(doc) } if block_given?
           end
         end
@@ -254,10 +261,10 @@ module Mongoid #:nodoc:
         #
         # @since 2.1.0
         def last
-          loaded.try(:last) ||
-            added.detect { |doc| doc == unloaded.try(:last) } ||
+          loaded.try(:values).try(:last) ||
+            added[unloaded.try(:last).try(:id)] ||
             unloaded.try(:last) ||
-            added.last
+            added.values.try(:last)
         end
 
         # Loads all the documents in the enumerable from the database.
@@ -322,7 +329,7 @@ module Mongoid #:nodoc:
         #
         # @since 2.1.0
         def size
-          (unloaded ? unloaded.count : loaded.count) + added.count{ |d| d.new_record? }
+          (unloaded ? unloaded.count : loaded.count) + added.values.count{ |d| d.new_record? }
         end
         alias :length :size
 

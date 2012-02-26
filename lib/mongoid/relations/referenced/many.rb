@@ -308,7 +308,7 @@ module Mongoid #:nodoc:
         def substitute(replacement)
           tap do |proxy|
             if replacement
-              new_docs, docs = replacement.compact.uniq, []
+              new_docs, docs = replacement, []
               new_ids = new_docs.map { |doc| doc.id }
               remove_not_in(new_ids)
               new_docs.each do |doc|
@@ -494,8 +494,7 @@ module Mongoid #:nodoc:
           in_memory.each do |doc|
             if !ids.include?(doc.id)
               unbind_one(doc)
-              added.try { |p| p.delete_one(doc) }
-              loaded.try { |p| p.delete_one(doc) }
+              target.delete(doc)
               if metadata.destructive?
                 doc.destroyed = true
               end

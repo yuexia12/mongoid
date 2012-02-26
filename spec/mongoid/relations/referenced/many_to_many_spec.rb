@@ -121,11 +121,11 @@ describe Mongoid::Relations::Referenced::ManyToMany do
                 person.preferences.send(method, preference)
               end
 
-              it "allows the document to be added again" do
+              pending "allows the document to be added again" do
                 person.preferences.should eq([ preference, preference ])
               end
 
-              it "allows duplicate ids" do
+              pending "allows duplicate ids" do
                 person.preference_ids.should eq([ preference.id, preference.id ])
               end
             end
