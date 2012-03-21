@@ -251,6 +251,13 @@ module Mongoid #:nodoc:
       #
       # @param [ Document ] document The document to fail.
       def fail_validate!(document)
+        if logger
+          logger.info("############ Validation failed ###########")
+          logger.info(document.inspect)
+          logger.info(document.errors)
+          logger.info(Threaded.stack(:bind).inspect)
+          logger.info("##########################################")
+        end
         raise Errors::Validations.new(document)
       end
 

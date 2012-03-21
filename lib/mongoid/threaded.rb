@@ -11,14 +11,21 @@ module Mongoid #:nodoc:
     # Begin entry into a named thread local stack.
     #
     # @example Begin entry into the stack.
-    #   Threaded.begin(:create)
+    #   Threaded.begin_stack(:create)
     #
     # @param [ Symbol ] name The name of the stack
     #
     # @return [ true ] True.
     #
     # @since 2.4.0
-    def begin(name)
+    def begin_stack(name)
+      if name == :bind && stack(name).any?
+        if logger = Mongoid.logger
+          logger.info("############ Double Bind Recorded ###########")
+          logger.info(caller[0, 10].join("\n"))
+          logger.info("#############################################")
+        end
+      end
       stack(name).push(true)
     end
 
@@ -39,14 +46,14 @@ module Mongoid #:nodoc:
     # Exit from a named thread local stack.
     #
     # @example Exit from the stack.
-    #   Threaded.exit(:create)
+    #   Threaded.exit_stack(:create)
     #
     # @param [ Symbol ] name The name of the stack
     #
     # @return [ true ] True.
     #
     # @since 2.4.0
-    def exit(name)
+    def exit_stack(name)
       stack(name).pop
     end
 

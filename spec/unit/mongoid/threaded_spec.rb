@@ -6,10 +6,10 @@ describe Mongoid::Threaded do
     stub
   end
 
-  describe "#begin" do
+  describe "#begin_stack" do
 
     before do
-      described_class.begin(:load)
+      described_class.begin_stack(:load)
     end
 
     after do
@@ -93,8 +93,8 @@ describe Mongoid::Threaded do
   describe "#exit" do
 
     before do
-      described_class.begin(:load)
-      described_class.exit(:load)
+      described_class.begin_stack(:load)
+      described_class.exit_stack(:load)
     end
 
     after do
