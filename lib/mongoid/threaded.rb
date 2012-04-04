@@ -20,11 +20,8 @@ module Mongoid #:nodoc:
     # @since 2.4.0
     def begin_stack(name)
       if name == :bind && stack(name).any?
-        if logger = Mongoid.logger
-          logger.info("############ Double Bind Recorded ###########")
-          logger.info(caller[0, 10].join("\n"))
-          logger.info("#############################################")
-        end
+        puts "[ mongoid-debug ] Double Bind Recorded"
+        puts "[ mongoid-debug ] #{caller[0, 10].join("\n")}"
       end
       stack(name).push(true)
     end
