@@ -17,7 +17,7 @@ describe Mongoid::Threaded do
     end
 
     it "adds a boolen to the load stack" do
-      described_class.stack(:load).should eq([ true ])
+      described_class.stack(:load).should eq([ Process.pid ])
     end
   end
 
@@ -33,7 +33,7 @@ describe Mongoid::Threaded do
     context "when the stack has elements" do
 
       before do
-        Thread.current[:"[mongoid]:load-stack"] = [ true ]
+        Thread.current[:"[mongoid]:load-stack"] = [ Process.pid ]
       end
 
       after do
@@ -73,7 +73,7 @@ describe Mongoid::Threaded do
     context "when a stack has been initialized" do
 
       before do
-        Thread.current[:"[mongoid]:load-stack"] = [ true ]
+        Thread.current[:"[mongoid]:load-stack"] = [ Process.pid ]
       end
 
       let(:loading) do
@@ -85,7 +85,7 @@ describe Mongoid::Threaded do
       end
 
       it "returns the stack" do
-        loading.should eq([ true ])
+        loading.should eq([ Process.pid ])
       end
     end
   end

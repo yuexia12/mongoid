@@ -255,6 +255,7 @@ module Mongoid #:nodoc:
         puts "[ mongoid-debug ] #{document.inspect}"
         puts "[ mongoid-debug ] #{document.errors.inspect}"
         puts "[ mongoid-debug ] #{Threaded.stack(:bind).inspect}"
+        puts "[ mongoid-debug ] Current pid: #{Process.pid}"
         raise Errors::Validations.new(document)
       end
 

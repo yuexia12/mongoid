@@ -19,11 +19,7 @@ module Mongoid #:nodoc:
     #
     # @since 2.4.0
     def begin_stack(name)
-      if name == :bind && stack(name).any?
-        puts "[ mongoid-debug ] Double Bind Recorded"
-        puts "[ mongoid-debug ] #{caller[0, 10].join("\n")}"
-      end
-      stack(name).push(true)
+      stack(name).push(Process.pid)
     end
 
     # Are in the middle of executing the named stack
